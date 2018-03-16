@@ -1,0 +1,23 @@
+{
+  "name": "arcane-broadcaster",
+  "version": "1.0.0",
+  "description": "uncensored and anonymous messaging service",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/terazoid/arcane-broadcaster.git"
+  },
+  "author": "terazoid",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/terazoid/arcane-broadcaster/issues"
+  },
+  "homepage": "https://github.com/terazoid/arcane-broadcaster#readme",
+  "dependencies": {
+    "express": "^4.16.2",
+    "jimp": "^0.2.28"
+  }
+}
