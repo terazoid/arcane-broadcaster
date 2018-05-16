@@ -1,22 +1,42 @@
 import expresrs from 'express';
-import ImageContainer from './ImageContainer';
-import Message from './Message';
 const app = expresrs();
+import db from './db';
+import configureEnviroment from './enviroment';
+import configureRoutes from './routes';
 
-app.get('/', (req, res) => {
-    ImageContainer.fromFile('input.png').then((container)=>{
-        const msg = new Message("ecfe0b2a", Date.now(), 'test message', null);
-        container.writeBlock(msg);
-        return container.save('output.png');
-    }).then(()=>{
-        return ImageContainer.fromFile('output.png');
-    }).then((container)=>{
-        res.send(container.readBlock().toString());
-    }).catch((err)=>{
-        console.error(err);
-        res.status(500);
-        res.send(JSON.stringify(err.message));
-    });
+configureEnviroment(app);
+configureRoutes(app);
+
+const server = app.listen(3000, () => console.log('Started web server on port 3000'));
+
+process.on('SIGTERM', shutDown);
+process.on('SIGINT', shutDown);
+
+let connections = [];
+
+server.on('connection', connection => {
+    connections.push(connection);
+    connection.on('close', () => connections = connections.filter(curr => curr !== connection));
 });
 
-app.listen(3000, () => console.log('Example app listening on port 3000!'));
+function shutDown() {
+    console.log('Received kill signal, shutting down gracefully');
+    db.close();
+    server.close(() => {
+        console.log('Closed out remaining connections');
+        process.exit(0);
+    });
+
+    setTimeout(() => {
+        console.error('Could not close connections in time, forcefully shutting down');
+        process.exit(1);
+    }, 10000);
+
+    connections.forEach(curr => curr.end());
+    setTimeout(() => connections.forEach(curr => curr.destroy()), 5000);
+}
+//
+// const key = new NodeRSA({b:512});
+//
+// console.log(key.exportKey('private'));
+// console.log(key.exportKey('public'));
