@@ -9,8 +9,17 @@ export default function(server) {
         res.render('./layout', {title: 'title', body});
     }));
 
-    server.get('/thread', asyncMiddleware(async (req, res) => {
-        const {message, replies} = app.getThread();
+    server.all('/post', asyncMiddleware(async (req, res) => {
+        if(req.method == 'POST') {
+            
+        }
+        const threads = app.getThreadsPage(1);
+        const body = await render('new-thread');
+        res.render('./layout', {title: 'title', body});
+    }));
+
+    server.get('/thread/:id', asyncMiddleware(async (req, res) => {
+        const {message, replies} = app.getThread(req.params.id);
         const body = await render('thread', {message, replies});
         res.render('./layout', {title: 'title', body});
     }));

@@ -2,20 +2,22 @@ import _ from 'lodash';
 import sha1 from 'sha1';
 
 export default class Message {
-    constructor(/*userId,*/ date, message, parent/*, sign*/) {
+    constructor({date, message, parent, pending=false/*, sign*/}) {
         //this.userId = userId;
         this.date = date;
         this.message = message;
         this.parent = parent;
+        this.penddding = pending;
         //this.sign = sign;
     }
 
     toString() {
+      const {date, message, parrent} = this;
         return JSON.stringify({
             //userId: this.userId,
-            date: this.date,
-            message: this.message,
-            parent: this.parent,
+            date,
+            message,
+            parent,
             //sign: this.sign,
         });
     }
@@ -35,6 +37,6 @@ export default class Message {
         if(!_.isInteger(date) || !_.isString(message) || !(parent === null || _.isString(parent))) {
             throw new Error('invalid message object');
         }
-        return new Message(date, message, parent);
+        return new Message({date, message, parent});
     }
 }

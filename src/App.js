@@ -8,7 +8,9 @@ import Message from "./Message";
 const THREADS_PER_PAGE=20;
 
 function getMessageObject(data) {
- return new Message(data.date, data.message, data.parent);
+  const {date, message, parent} = data;
+  const pending = data.pending != 0;
+  return new Message({date, message, parent, pending});
 }
 
 class App {
@@ -53,7 +55,7 @@ class App {
 
         if(!dbExisted) {
             //idUser CHAR(400),
-            this.db.exec('CREATE TABLE messages (id CHAR(40) PRIMARY KEY, date INT NOT NULL, message VARCHAR(65536) NOT NULL, parent CHAR(40) NULL)');
+            this.db.exec('CREATE TABLE messages (id CHAR(40) PRIMARY KEY, date INT NOT NULL, message VARCHAR(65536) NOT NULL, parent CHAR(40) NULL), pending INTEGER NOT NULL DEFAULT 0');
             this.db.exec("INSERT INTO messages VALUES('idtest', "+(Date.now()/1000|0)+", 'me\nssage', null)");
             this.db.exec("INSERT INTO messages VALUES('idtest2', "+(Date.now()/1000)+", 'mes\nsage', null)");
         }
@@ -71,9 +73,7 @@ class App {
     }
 
     getThread(id) {
-
-        const message = getMessageObject(this.db.prepare('select * from messages where parent is null and id=:id limit 1').one({id}));
-
+        const message = getMessageObject(this.db.prepare('select * from messages where parent is null and id=:id limit 1').get({id}));
         const replies = this.db.prepare('select * from messages where parent = :parent order by date desc').all({
             parent: id,
         }).map(getMessageObject);
