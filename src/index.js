@@ -1,13 +1,14 @@
-import expresrs from 'express';
-const app = expresrs();
-import db from './db';
+import express from 'express';
+const expressApp = express();
 import configureEnviroment from './enviroment';
 import configureRoutes from './routes';
+import app from './App';
 
-configureEnviroment(app);
-configureRoutes(app);
+configureEnviroment(expressApp);
+configureRoutes(expressApp);
 
-const server = app.listen(3000, () => console.log('Started web server on port 3000'));
+const server = expressApp.listen(3000, () => console.log('Started web server on port 3000'));
+app.init();
 
 process.on('SIGTERM', shutDown);
 process.on('SIGINT', shutDown);
@@ -21,7 +22,7 @@ server.on('connection', connection => {
 
 function shutDown() {
     console.log('Received kill signal, shutting down gracefully');
-    db.close();
+    app.close();
     server.close(() => {
         console.log('Closed out remaining connections');
         process.exit(0);

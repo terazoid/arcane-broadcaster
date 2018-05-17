@@ -1,20 +1,21 @@
 import ImageContainer from "./ImageContainer";
 import Message from "./Message";
-import NodeRSA from 'node-rsa';
+import app from './App';
 
-export default function(app) {
-    app.get('/', asyncMiddleware(async function (req, res) {
-        const body = await render('index');
+export default function(server) {
+    server.get('/', asyncMiddleware(async (req, res) => {
+        const threads = app.getThreadsPage(1);
+        const body = await render('index', {threads});
         res.render('./layout', {title: 'title', body});
     }));
 
-    app.get('/key', (req, res) => {
+    server.get('/thread', asyncMiddleware(async (req, res) => {
+        const {message, replies} = app.getThread();
+        const body = await render('thread', {message, replies});
+        res.render('./layout', {title: 'title', body});
+    }));
 
-
-        res.send(result);
-    });
-
-    app.get('/test', (req, res) => {
+    server.get('/test', (req, res) => {
         ImageContainer.fromFile('input.png').then((container)=>{
             const msg = new Message("ecfe0b2a", Date.now(), 'test message', null);
             container.writeBlock(msg);
@@ -32,7 +33,7 @@ export default function(app) {
 
     async function render(file, data={}) {
         return new Promise((resolve, reject)=>{
-            app.render(file, data, (err, result)=>{
+            server.render(file, data, (err, result)=>{
                 if(err) {
                     reject(err);
                 }

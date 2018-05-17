@@ -1,0 +1,29 @@
+div.post {
+    margin: 4px 0;
+    overflow: hidden;
+}
+div.reply {
+    background-color: #d6daf0;
+    border: 1px solid #b7c5d9;
+    border-top-width: 1px;
+    border-left-width: 1px;
+    border-top-style: solid;
+    border-left-style: solid;
+    border-top-color: rgb(183, 197, 217);
+    border-left-color: rgb(183, 197, 217);
+    border-left: 0;
+    border-top: 0;
+    display: table;
+    padding: 2px;
+}
+div.post div.postInfo {
+    display: block;
+    width: 100%;
+}
+div.post div.postInfo span.nameBlock span.name {
+    color: #117743;
+    font-weight: 700;
+}
+div.post blockquote.postMessage {
+    display: block;
+}

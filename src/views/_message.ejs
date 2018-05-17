@@ -1,0 +1,18 @@
+<div class="postContainer">
+    <div id="p-message.getId()" class="post reply">
+        <div class="postInfo desktop" id="pi172999365">
+            <span class="nameBlock">
+                <span class="name">Anonymous</span>
+            </span>
+            <span class="dateTime"><%=message.date%></span>
+            <span class="postNum">
+                <a href="<%if(link=='thread'){%>/thread/<%=message.getId()/<% } else {%>#p-<%=message.getId()%>">
+                    <%=message.getId()%>
+                </a>
+            </span>
+        </div>
+        <blockquote class="postMessage" id="m172999365">
+            <%-htmlDisplay(message.message)%>
+        </blockquote>
+    </div>
+</div>
