@@ -1,6 +1,17 @@
+body > .container {
+    padding: 60px 15px 0;
+}
+
+div.op {
+    margin-bottom: 10px;
+}
 div.post {
     margin: 4px 0;
     overflow: hidden;
+}
+div.post.pending {
+    border: 1px dashed #333;
+    background-color: #ccc;
 }
 div.reply {
     background-color: #d6daf0;
@@ -22,8 +33,12 @@ div.post div.postInfo {
 }
 div.post div.postInfo span.nameBlock span.name {
     color: #117743;
-    font-weight: 700;
+    font-weight: bold;
 }
 div.post blockquote.postMessage {
     display: block;
+}
+
+div.postInfo .pending {
+    color: #cc8844;
 }

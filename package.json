@@ -20,7 +20,9 @@
   "homepage": "https://github.com/terazoid/arcane-broadcaster#readme",
   "dependencies": {
     "better-sqlite3": "^4.1.0",
+    "body-parser": "^1.18.3",
     "crc-32": "^1.2.0",
+    "dateformat": "^3.0.3",
     "ejs": "^2.6.1",
     "express": "^4.16.2",
     "jimp": "^0.2.28",

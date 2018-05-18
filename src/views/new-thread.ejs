@@ -1,0 +1,23 @@
+<form method="post">
+    <div class="form-group">
+        <% const messageError=_.find(form.errors, {field:'message'}); %>
+        <label for="message">Message</label>
+        <textarea class="form-control <%=messageError?'is-invalid':(form.isValidated?'is-valid':'')%>" id="message" name="message" rows="5"><%=form.message%></textarea>
+        <% if(messageError) { %>
+        <div class="invalid-feedback">
+            <%= messageError.message %>
+        </div>
+        <% } %>
+    </div>
+    <% formErrors = _.filter(form.errors, {field:'*'}) %>
+    <% if(formErrors.length>0) { %>
+    <div class="invalid-feedback" style="display:block">
+        <ul>
+            <% for(error in errors){ %>
+            <ul><%=error.message%></ul>
+            <% } %>
+        </ul>
+    </div>
+    <% } %>
+    <button type="submit" class="btn btn-primary">Post</button>
+</form>
