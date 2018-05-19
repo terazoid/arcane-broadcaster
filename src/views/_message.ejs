@@ -1,23 +1,35 @@
 <%if(typeof opPost === 'undefined') {
     opPost=false;
 }%>
-<div class="postContainer">
-    <div id="p-message.getId()" class="post <%=opPost?'op':'reply'%> <%=message.pending?'pending':''%>">
-        <div class="postInfo desktop" id="pi172999365">
-            <% if(message.pending) { %>
-            <span class="postInfo">
-                <span class="pending">Pending</span>
-            </span>
-            <% } %>
-            <span class="dateTime"><%=message.getFormattedDate()%></span>
-            <span class="postNum">
+<div class="card <%-message.pending?'bg-secondary':'bg-light'%> mb-3" id="p-<%=message.getId()%>">
+    <div class="card-header">
+        <div class="card-title">
+            <div class="pull-left">
+                <% if(message.pending) { %>
+                <span class="postInfo">
+                    <span class="pending">Pending</span>
+                </span>
+                <% } %>
+                <% if(link===false) { %>
+                <%=message.getIdShort()%>
+                <% } else { %>
                 <a href="<%if(link=='thread'){%>/thread/<%=message.getId()%>/<% } else {%>#p-<%=message.getId()%><%}%>">
                     <%=message.getIdShort()%>
                 </a>
-            </span>
+                <% } %>
+            </div>
         </div>
-        <blockquote class="postMessage" id="m172999365">
-            <%-htmlDisplay(message.message)%>
-        </blockquote>
+    </div>
+    <div class="card-body">\
+        <%-htmlDisplay(message.message)%>
+    </div>
+    <div class="card-footer">
+        <time class="pull-right">
+            <i class="fa fa-calendar"></i><%=message.getFormattedDate()%>  <i class="fa fa-clock-o"></i><%=message.getFormattedTime()%>
+        </time>
+        <% if(opPost){ %>
+        <i class="fa fa-mail-reply "></i>
+        <a href="/thread/<%=message.getId()%>#reply">Reply</a>
+        <% } %>
     </div>
 </div>

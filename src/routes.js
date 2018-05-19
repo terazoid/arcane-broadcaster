@@ -3,6 +3,10 @@ import Message from "./Message";
 import Place from "./Place";
 import app from './App';
 import _ from 'lodash';
+import multer from 'multer';
+
+const storage = multer.memoryStorage();
+const upload = multer({ storage: storage });
 
 export default function(server) {
     server.get('/', asyncMiddleware(async (req, res) => {
@@ -70,13 +74,50 @@ export default function(server) {
             }
         }
         const body = await render('places', {places, form});
-        res.render('./layout', {title: 'Places ', body, page: 'places'});
+        res.render('./layout', {title: 'Places', body, page: 'places'});
     }));
 
-    server.all('/container', asyncMiddleware(async (req, res) => {
+    server.all('/container', upload.single('image'), asyncMiddleware(async (req, res) => {
         // const container = await ImageContainer.fromFile('input.png');
         // container.writeBlock(...);
         // return container.save('output.png');
+        let  messages = [];
+        let image = null;
+        if(req.method === 'POST') {
+            let pending = Message.findPending();
+            const container = await ImageContainer.fromBuffer(req.file.buffer);
+            while(pending.length>0) {
+                const message = pending.pop();
+                try {
+                    container.writeBlock(message);
+                }
+                catch(e) {
+                    console.log(e);
+                    break;
+                }
+                messages.push(message);
+            }
+            let places = Place.findAll();
+            while(places.length>0) {
+                const place = places.pop();
+                try {
+                    container.writeBlock(place);
+                }
+                catch(e) {
+                    console.log(e);
+                    break;
+                }
+            }
+            if(messages.length>0) {
+                //image = await new Promise((resolve, reject)=>image.getBase64("image/png", resolve));
+                image = await container.getBase64("image/png");
+            }
+        }
+        if(messages.length===0) {
+            messages = Message.findPending();
+        }
+        const body = await render('container', {messages, image});
+        res.render('./layout', {title: 'New container', body, page: 'container'});
     }));
 
     async function render(file, data={}) {

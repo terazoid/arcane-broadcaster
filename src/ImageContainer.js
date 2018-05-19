@@ -27,9 +27,21 @@ export default class ImageContainer {
         });
     }
 
+    static fromBuffer(buffer) {
+        return Jimp.read(buffer).then((image)=>{
+            return new ImageContainer(image);
+        });
+    }
+
     save(file) {
         return new Promise((resolve,reject)=>{
             this.image.write(file, (err)=>err?reject(err):resolve());
+        });
+    }
+
+    getBase64(type) {
+        return new Promise((resolve,reject)=>{
+            this.image.getBase64(type, (err, image)=>err?reject(err):resolve(image));
         });
     }
 

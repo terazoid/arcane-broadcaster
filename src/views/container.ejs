@@ -1,0 +1,32 @@
+<% if(image) { %>
+    <h2>Image with hidden messages:</h2>
+    <div class="row">
+        <img class="container" src="<%=image%>" alt="" />
+    </div>
+
+    <h2>Included messages</h2>
+
+    <% messages.forEach(function(message){ %>
+    <%- include('_message', {message: message, link: false}) %>
+    <% }); %>
+
+<% } else { %>
+    <form id="imageForm" action="" class="form" method="post" enctype="multipart/form-data">
+        <div class="custom-file">
+            <input type="file" class="custom-file-input" id="customFile" name="image">
+            <label class="custom-file-label" for="customFile">Choose file</label>
+        </div>
+    </form>
+
+    <script type="text/javascript">
+        $('.custom-file-input').on('change', function() {
+            $('#imageForm').submit();
+        });
+    </script>
+
+    <h2>Pending messages</h2>
+
+    <% messages.forEach(function(message){ %>
+    <%- include('_message', {message: message, link: false}) %>
+    <% }); %>
+<% } %>

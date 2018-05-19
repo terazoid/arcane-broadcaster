@@ -18,7 +18,7 @@ export default class Message {
     }
 
     toString() {
-      const {date, message, parrent} = this;
+      const {date, message, parent} = this;
         return JSON.stringify({
             //userId: this.userId,
             date,
@@ -37,7 +37,11 @@ export default class Message {
     }
 
     getFormattedDate() {
-        return dateFormat(new Date(this.date*1000), 'yyyy-mm-dd HH:MM:ss');
+        return dateFormat(new Date(this.date*1000), 'yyyy-mm-dd');
+    }
+
+    getFormattedTime() {
+        return dateFormat(new Date(this.date*1000), 'HH:MM:ss');
     }
 
     getIdShort() {
@@ -110,5 +114,9 @@ export default class Message {
         else {
             throw new Error('Message editing is not supported');
         }
+    }
+
+    static findPending() {
+        return app.db.prepare('select * from messages where pending!=0 order by date desc').all({}).map(Message.fromSelect);
     }
 }
