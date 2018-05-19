@@ -1,6 +1,7 @@
 import Jimp from 'jimp';
 import CRC32 from 'crc-32';
 import Message from "./Message";
+import Place from "./Place";
 
 function getIndex(i) {
     return i+Math.floor(i/3);
@@ -8,6 +9,7 @@ function getIndex(i) {
 
 export default class ImageContainer {
     static get BLOCK_TYPE_MESSAGE() {return 1;};
+    static get BLOCK_TYPE_PLACE() {return 2;};
 
     static get SEEK_SET() { return 0;}
     static get SEEK_CUR() { return 1;}
@@ -97,6 +99,16 @@ export default class ImageContainer {
     writeBlock(block) {
         if(block instanceof Message) {
             const msg = Buffer.from(block.toString(), 'utf-8');
+            this._confirmSpace(8*(1+4+4+msg.length));
+            this.writeByte(ImageContainer.BLOCK_TYPE_MESSAGE);
+            this.writeInt(msg.length);
+            this.writeInt(CRC32.buf(msg));
+            for(const b of msg) {
+                this.writeByte(b);
+            }
+        }
+        else if(block instanceof Place) {
+            const msg = Buffer.from(block.url, 'utf-8');
             this._confirmSpace(8*(1+4+4+msg.length));
             this.writeByte(ImageContainer.BLOCK_TYPE_MESSAGE);
             this.writeInt(msg.length);

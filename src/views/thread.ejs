@@ -2,3 +2,6 @@
 <% replies.forEach(function(message){ %>
 <%- include('_message', {message: message, link: 'reply'}) %>
 <% }); %>
+<hr />
+<h2>Reply</h2>
+<%- include('_replyForm', {form: form}) %>

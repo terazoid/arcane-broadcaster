@@ -1,5 +1,6 @@
 import ImageContainer from "./ImageContainer";
 import Message from "./Message";
+import Place from "./Place";
 import app from './App';
 import _ from 'lodash';
 
@@ -7,7 +8,7 @@ export default function(server) {
     server.get('/', asyncMiddleware(async (req, res) => {
         const threads = app.getThreadsPage(1);
         const body = await render('index', {threads});
-        res.render('./layout', {title: 'Messages', body});
+        res.render('./layout', {title: 'Messages', body, page: 'main'});
     }));
 
     server.all('/post', asyncMiddleware(async (req, res) => {
@@ -24,31 +25,59 @@ export default function(server) {
                 return res.redirect('/');
             }
         }
-        const body = await render('new-thread', {form});
-        res.render('./layout', {title: 'New message', body});
+        const body = await render('newThread', {form});
+        res.render('./layout', {title: 'New message', body, page: 'post'});
     }));
 
-    server.get('/thread/:id', asyncMiddleware(async (req, res) => {
+    server.all('/thread/:id', asyncMiddleware(async (req, res) => {
         const {thread, replies} = app.getThread(req.params.id);
-        const body = await render('thread', {thread, replies});
-        res.render('./layout', {title: 'Thread '+req.params.id, body});
+        const form = new Message({
+            date: Date.now()/1000|0,
+            message: '',
+            pending: true,
+            parent: req.params.id,
+        });
+        if(req.method === 'POST') {
+            _.assign(form, _.pick(req.body, ['message']));
+            if(form.validate()) {
+                form.save();
+                return res.redirect('.');
+            }
+        }
+        const body = await render('thread', {thread, replies, form});
+        res.render('./layout', {title: 'Thread '+req.params.id, body, page: 'thread'});
     }));
 
-    server.get('/test', (req, res) => {
-        ImageContainer.fromFile('input.png').then((container)=>{
-            const msg = new Message("ecfe0b2a", Date.now(), 'test message', null);
-            container.writeBlock(msg);
-            return container.save('output.png');
-        }).then(()=>{
-            return ImageContainer.fromFile('output.png');
-        }).then((container)=>{
-            res.send(container.readBlock().toString());
-        }).catch((err)=>{
-            console.error(err);
-            res.status(500);
-            res.send(JSON.stringify(err.message));
-        });
-    });
+    server.all('/places', asyncMiddleware(async (req, res) => {
+        const places = Place.findAll();
+        const form = new Place({});
+        if(req.method === 'POST') {
+            switch(_.get(req.body, 'action')) {
+                case 'add':
+                    _.assign(form, _.pick(req.body, ['url']));
+                    form.enabled = true;
+                    if(form.validate()) {
+                        form.save();
+                        return res.redirect('/places');
+                    }
+                    break;
+                case 'delete':
+                    if(typeof req.body.id !== 'undefined') {
+                        Place.delete(req.body.id);
+                        return res.redirect('/places');
+                    }
+                    break;
+            }
+        }
+        const body = await render('places', {places, form});
+        res.render('./layout', {title: 'Places ', body, page: 'places'});
+    }));
+
+    server.all('/container', asyncMiddleware(async (req, res) => {
+        // const container = await ImageContainer.fromFile('input.png');
+        // container.writeBlock(...);
+        // return container.save('output.png');
+    }));
 
     async function render(file, data={}) {
         return new Promise((resolve, reject)=>{

@@ -58,6 +58,7 @@ class App {
                     reply.save();
                 }
             }
+            this.db.exec('CREATE TABLE places (id INTEGER PRIMARY KEY AUTOINCREMENT, url VARCHAR(2083) NOT NULL COLLATE NOCASE, enabled INTEGER NOT NULL DEFAULT 1, CONSTRAINT url_unique UNIQUE (url))');
         }
     }
 
@@ -74,7 +75,7 @@ class App {
 
     getThread(id) {
         const thread = Message.fromSelect(this.db.prepare('select * from messages where parent is null and id=:id limit 1').get({id}));
-        const replies = this.db.prepare('select * from messages where parent = :parent order by date desc').all({
+        const replies = this.db.prepare('select * from messages where parent = :parent order by date asc').all({
             parent: id,
         }).map(Message.fromSelect);
 

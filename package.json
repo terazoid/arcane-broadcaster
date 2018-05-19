@@ -27,8 +27,8 @@
     "express": "^4.16.2",
     "jimp": "^0.2.28",
     "lodash": "^4.17.5",
-    "node-rsa": "^0.4.2",
-    "sha1": "^1.1.1"
+    "sha1": "^1.1.1",
+    "valid-url": "^1.0.9"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",

@@ -42,3 +42,11 @@ div.post blockquote.postMessage {
 div.postInfo .pending {
     color: #cc8844;
 }
+
+.flex-center{
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+}
