@@ -141,17 +141,30 @@ export default class ImageContainer {
         const crc32 = this.readInt();
         this._confirmSpace(8*len);
         switch(type) {
-            case ImageContainer.BLOCK_TYPE_MESSAGE:
+            case ImageContainer.BLOCK_TYPE_MESSAGE: {
                 let msg = new Buffer(len);
-                for(let i=0; i<len; i++) {
+                for (let i = 0; i < len; i++) {
                     const b = this.readByte();
                     msg.writeUInt8(b, i);
                 }
-                const realCrc32=CRC32.buf(msg);
-                if(realCrc32!==crc32) {
-                    throw new Error('Invalid message checksum');
+                const realCrc32 = CRC32.buf(msg);
+                if (realCrc32 !== crc32) {
+                    throw new Error('Invalid checksum');
                 }
                 return Message.fromString(msg.toString('utf-8'));
+            }
+            case ImageContainer.BLOCK_TYPE_PLACE: {
+                let url = new Buffer(len);
+                for (let i = 0; i < len; i++) {
+                    const b = this.readByte();
+                    url.writeUInt8(b, i);
+                }
+                const realCrc32 = CRC32.buf(url);
+                if (realCrc32 !== crc32) {
+                    throw new Error('Invalid checksum');
+                }
+                return new Place({url:url.toString('utf-8')});
+            }
             default:
                 throw new Error('Unknown block type');
         }
