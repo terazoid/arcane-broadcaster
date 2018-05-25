@@ -4,12 +4,83 @@ import Path from "path";
 import _ from 'lodash';
 import Database from 'better-sqlite3';
 import Message from "./Message";
+import queue from 'async/queue';
+import axios from 'axios';
+import ImageContainer from "./ImageContainer";
+import Place from "./Place";
+import cheerio from 'cheerio';
+import url from 'url';
 
 const THREADS_PER_PAGE=20;
 
 class App {
     constructor() {
         this.db=null;
+        this.imagesQueue = queue(async (task, callback) => {
+            try {
+                const response = await axios({url: task.url, method: 'GET', responseType: 'arraybuffer'});
+                if(response.status === 200 &&_.get(response.headers, 'content-type', 'image/png').toLowerCase() === 'image/png') {
+                    const container = await ImageContainer.fromBuffer(response.data);
+                    for(let i=0; i<4096; i++) {
+                        let block;
+                        try {
+                            block = container.readBlock();
+                        }
+                        catch (e) {
+                            break;
+                        }
+                        if(block instanceof Message) {
+                            const old = Message.findById(block.getId());
+                            if(typeof old === 'undefined') {
+                                block.save();
+                            }
+                            else {
+                                old.date = block.date;
+                                old.message = block.message;
+                                old.parent = block.parent;
+                                old.pending = false;
+                                old.save();
+                            }
+                        }
+                        else if(block instanceof Place) {
+                            if(typeof Place.findByUrl(block.url) === 'undefined') {
+                                block.save();
+                            }
+                        }
+                    }
+                }
+            }
+            catch(e) {
+                console.log(e);
+            }
+            callback();
+        });
+        this.placesQueue = queue(async (task, callback) => {
+            try{
+                const page = await axios.get(task.url);
+                if(page.status===200) {
+                    const $ = cheerio.load(page.data);
+                    let links = [];
+                    $('a[href]>img').each((i, el)=>{
+                        links.push($(el).parent('a').attr('href'));
+                    });
+                    $('img').each((i, el)=>{
+                        links.push($(el).attr('src'));
+                    });
+                    links = _.uniq(links.map((link)=>url.resolve(task.url, link)));
+                    console.log(links);
+                    this.imagesQueue.push(links.map((url)=>({url})));
+                }
+            }
+            catch(e) {
+                console.log(e);
+            }
+            callback();
+        }, 5);
+
+// assign a callback
+        this.placesQueue.drain = function() {
+        };
     }
 
     static getFullPath(path) {

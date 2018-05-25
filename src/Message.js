@@ -103,20 +103,32 @@ export default class Message {
         if(!this.validate()) {
             throw new Error('Message validation errors: '+JSON.stringify(this.errors));
         }
+        const id=this.getId();
+        const {date, message, parent} = this;
+        const pending = this.pending?1:0;
         if(this._isNew) {
-            const id=this.getId();
-            const {date, message, parent} = this;
-            const pending = this.pending?1:0;
             app.db.prepare("INSERT INTO messages VALUES(:id, :date, :message, :parent, :pending)").run({
                 id, date, message, parent, pending
             });
         }
         else {
-            throw new Error('Message editing is not supported');
+            app.db.prepare("UPDATE messages SET date=:date, message=:message, parent=:parent, pending=:pending WHERE id=:id").run({
+                id, date, message, parent, pending
+            });
         }
     }
 
     static findPending() {
         return app.db.prepare('select * from messages where pending!=0 order by date desc').all({}).map(Message.fromSelect);
+    }
+
+    static findById(id) {
+        const row = app.db.prepare('SELECT * FROM messages WHERE id=:id').get({id});
+        if(typeof row === 'undefined') {
+            return row;
+        }
+        else {
+            return Message.fromSelect(row);
+        }
     }
 }

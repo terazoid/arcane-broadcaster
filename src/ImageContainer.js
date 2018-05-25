@@ -122,7 +122,7 @@ export default class ImageContainer {
         else if(block instanceof Place) {
             const msg = Buffer.from(block.url, 'utf-8');
             this._confirmSpace(8*(1+4+4+msg.length));
-            this.writeByte(ImageContainer.BLOCK_TYPE_MESSAGE);
+            this.writeByte(ImageContainer.BLOCK_TYPE_PLACE);
             this.writeInt(msg.length);
             this.writeInt(CRC32.buf(msg));
             for(const b of msg) {
@@ -142,7 +142,7 @@ export default class ImageContainer {
         this._confirmSpace(8*len);
         switch(type) {
             case ImageContainer.BLOCK_TYPE_MESSAGE: {
-                let msg = new Buffer(len);
+                let msg = Buffer.alloc(len);
                 for (let i = 0; i < len; i++) {
                     const b = this.readByte();
                     msg.writeUInt8(b, i);
@@ -154,7 +154,7 @@ export default class ImageContainer {
                 return Message.fromString(msg.toString('utf-8'));
             }
             case ImageContainer.BLOCK_TYPE_PLACE: {
-                let url = new Buffer(len);
+                let url = Buffer.alloc(len);
                 for (let i = 0; i < len; i++) {
                     const b = this.readByte();
                     url.writeUInt8(b, i);

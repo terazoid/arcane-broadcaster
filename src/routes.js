@@ -120,6 +120,14 @@ export default function(server) {
         res.render('./layout', {title: 'New container', body, page: 'container'});
     }));
 
+    server.get('/update', asyncMiddleware(async (req, res) => {
+        if(app.placesQueue.length() === 0 && app.imagesQueue.length() === 0) {
+            const places = Place.findEnabled();
+            app.placesQueue.push(places.map(place=>({url:place.url})));
+        }
+        return res.redirect('/');
+    }));
+
     async function render(file, data={}) {
         return new Promise((resolve, reject)=>{
             server.render(file, data, (err, result)=>{

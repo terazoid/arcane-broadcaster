@@ -72,9 +72,18 @@ export default class Place {
             });
         }
         else {
-            app.db.prepare("UPDATE places SET url=:url, enabled=:enabled WHERE id=:id limit 1").run({
+            app.db.prepare("UPDATE places SET url=:url, enabled=:enabled WHERE id=:id").run({
                 id, url, enabled
             });
         }
+    }
+
+    static findEnabled() {
+        return app.db.prepare("SELECT * FROM places WHERE enabled != 0").all().map(Place.fromSelect);
+    }
+
+    static findByUrl(url) {
+        const row = app.db.prepare("SELECT * FROM places WHERE url=:url").get({url});
+        return row?Place.fromSelect(row):row;
     }
 }
