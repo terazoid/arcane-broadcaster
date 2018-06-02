@@ -1,7 +1,0 @@
-<%- include('_message', {message: thread, link: 'thread', opPost:true}) %>
-<% replies.forEach(function(message){ %>
-<%- include('_message', {message: message, link: 'reply'}) %>
-<% }); %>
-<hr />
-<h2 id="reply">Reply</h2>
-<%- include('_replyForm', {form: form}) %>
