@@ -51,7 +51,7 @@ export default {
   data() {
     return {
       loading: true,
-      messages: null,
+      messages: [],
       currentPage: 1,
       perPage: 10,
       totalRows: 0,
