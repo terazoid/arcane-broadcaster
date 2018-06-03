@@ -198,6 +198,7 @@ export default {
           imagesQueue.drain = void 0;
         };
       });
+      this.updating = false;
     },
     async clearMessages() {
       await Message.deleteMany({});

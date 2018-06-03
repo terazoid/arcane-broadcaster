@@ -1,6 +1,7 @@
 import Document from '../camo/lib/document';
 import sha1 from 'node-sha1';
 import dateFormat from 'dateformat';
+import Vue from 'vue';
 
 export default class Message extends Document {
   static create(data) {
@@ -93,5 +94,13 @@ export default class Message extends Document {
 
   static collectionName() {
     return 'messages';
+  }
+  
+  postSave() {
+    Vue.eventBus.$emit('messageSaved', this);
+  }
+  
+  postDelete() {
+    Vue.eventBus.$emit('messageDeleted', this);
   }
 }

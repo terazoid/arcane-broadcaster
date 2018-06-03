@@ -4,7 +4,7 @@
     <div class="row">
       <div class="col-md-10 col-sm-12">
         <b-form-group>
-          <b-form-input id="url" type="text" v-model="form.url" required :state="urlError===null?null:'invalid'" placeholder="Url" />
+          <input id="url" type="text" class="form-control" :class="{'is-invalid':urlError!==null}" v-model="form.url" placeholder="Url" />
           <b-form-invalid-feedback v-if="urlError" id="inputLiveFeedback">
             {{urlError}}
           </b-form-invalid-feedback>
@@ -42,7 +42,7 @@ import _ from 'lodash';
 export default {
   name: 'landing-page',
   data() {
-    return {
+    return {url:'',
       loading: false,
       currentPage: 1,
       perPage: 5,

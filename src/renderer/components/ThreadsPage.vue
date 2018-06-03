@@ -1,8 +1,16 @@
 <template>
 <b-container>
-  <div v-if="!messages || loading">
-    <font-awesome-icon icon="spinner" spin />
+  <template v-if="">
+  </template>
+  <div v-if="!loading && changed">
+    <b-alert show>
+      <div>Some new threads were found.</div>
+      <b-button @click="this.loadThreads" variant="primary">Update paage</b-button>
+    </b-alert>
   </div>
+  <template v-else v-if="messages.length==0">
+    <b-alert show>No messages</b-alert>
+  </template>
   <b-row v-else>
     <div>
       <b-col md="6" class="my-1" v-if="perPage<totalRows">
@@ -47,6 +55,7 @@ export default {
       currentPage: 1,
       perPage: 10,
       totalRows: 0,
+      changed: false,
     };
   },
   computed: {
@@ -61,19 +70,35 @@ export default {
       totalRows = await totalRows;
       this.messages=await MessageModel.find({parent:{ $exists: false }},{sort:'-date',skip:this.perPage*(this.currentPage-1),limit:this.perPage});
       this.totalRows = totalRows;
+      this.changed = false;
       this.loading=false;
     },
     async remove(m) {
+      await MessageModel.deleteMany({parent:m.id});
       await m.delete();
-      await this.loadThreads();
+      //await this.loadThreads();
     },
     reply(message) {
       const {id} = message;
       this.$router.push({name: 'thread', params:{id}});
     },
+    _messageSavedHandler(m) {
+      if(m.parent == null) {
+        this.changed = true;
+      }
+    },
+    _messageDeletedHandler(m) {
+      this.loadThreads();
+    },
   },
   async created() {
     await this.loadThreads();
+    this.$eventBus.$on('messageSaved', this._messageSavedHandler);
+    this.$eventBus.$on('messageDeleted', this._messageDeletedHandler);
+  },
+  beforeDestroy() {
+    this.$eventBus.$off('messageSaved', this._messageSavedHandler);
+    this.$eventBus.$off('messageDeleted', this._messageDeletedHandler);
   }
 };
 </script>

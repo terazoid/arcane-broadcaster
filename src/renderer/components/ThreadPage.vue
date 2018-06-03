@@ -41,6 +41,7 @@ export default {
       thread : null,
       messages: [],
       errors: [],
+      changed: false,
     };
   },
   methods: {

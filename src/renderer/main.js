@@ -18,6 +18,7 @@ if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
 Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.use(BootstrapVue);
+Vue.eventBus = Vue.prototype.$eventBus = new Vue();
 
 camo.connect('nedb://'+path.join(app.getPath('userData'), 'board')).then(function(db) {
     Vue.prototype.$db = db;
