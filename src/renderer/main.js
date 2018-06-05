@@ -19,6 +19,7 @@ Vue.http = Vue.prototype.$http = axios
 Vue.config.productionTip = false
 Vue.use(BootstrapVue);
 Vue.eventBus = Vue.prototype.$eventBus = new Vue();
+Vue.prototype._ = require('lodash');
 
 camo.connect('nedb://'+path.join(app.getPath('userData'), 'board')).then(function(db) {
     Vue.prototype.$db = db;

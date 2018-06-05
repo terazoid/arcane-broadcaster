@@ -60,7 +60,7 @@ export default {
   },
   computed: {
     messageChunks() {
-      return _.chunk(this.messages,2);
+      return _.chunk(this.messages,1);
     }
   },
   methods: {

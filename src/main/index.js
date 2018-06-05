@@ -14,9 +14,10 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`
 
 function createWindow () {
-  if (process.env.NODE_ENV !== 'production') {
-    require('vue-devtools').install();
-  }
+  app.commandLine.appendSwitch('ignore-certificate-errors', 'true');
+  // if (process.env.NODE_ENV !== 'production') {
+  //   require('vue-devtools').install();
+  // }
   /**
    * Initial window options
    */

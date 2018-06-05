@@ -49,7 +49,7 @@ export default {
   },
   computed: {
     messageHtml() {
-      return this.message.message;
+      return this._.escape(this.message.message).replace(/\n/g,'<br/>');
     },
   }
 }

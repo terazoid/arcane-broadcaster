@@ -1,7 +1,9 @@
 <template>
 <b-container>
   <b-card v-if="image" class="my-2" title="Generated container image">
-    <b-img fluid :src="image" class="my-1" />
+    <div>
+      <b-img fluid :src="image" class="my-1" />
+    </div>
     <b-button variant="primary" @click="saveImage">
       Save container
     </b-button>

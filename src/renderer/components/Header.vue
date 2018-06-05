@@ -9,7 +9,7 @@
         <b-button variant="success" class="my-0 mx-md-2" @click="newThread.visible=true">New thread</b-button>
         <b-button variant="info" class="my-0 mx-md-2" :disabled="updating" @click="update">Load messages</b-button>
         <b-button :to="{name:'container'}" variant="primary" class="my-0 mx-md-2">Create container</b-button>
-        <b-button variant="danger" class="my-0 mx-md-2" @click="clearMessages">Clear messages</b-button>
+        <b-button v-if="false" variant="danger" class="my-0 mx-md-2" @click="clearMessages">Clear messages</b-button>
       </b-navbar-nav>
     </b-collapse>
   </b-navbar>
@@ -43,6 +43,7 @@ import axios from 'axios';
 import cheerio from 'cheerio';
 import ImageContainer from "../ImageContainer";
 import url from 'url';
+import {isHttpUri, isHttpsUri} from 'valid-url';
 
 export default {
   name: 'Header',
@@ -110,6 +111,7 @@ export default {
         try {
           const response = await axios({url: task.url, method: 'GET', responseType: 'arraybuffer'});
           if ([200,304].indexOf(response.status)!==-1 && _.get(response.headers, 'content-type', 'image/png').toLowerCase() === 'image/png' ) {
+            console.log('Downloaded: '+task.url);
             const container = await ImageContainer.fromBuffer(Buffer.from(response.data));
             for (let i = 0; i < 4096; i++) {
               let block;
@@ -151,13 +153,29 @@ export default {
           if ([200, 304].indexOf(page.status) !== -1) {
             const $ = cheerio.load(page.data);
             let links = [];
-            $('a[href]>img').each((i, el) => {
-              links.push($(el).parent('a').attr('href'));
+            $('a[href] img').each((i, el) => {
+              const url = $(el).parents('a').attr('href');
+              if(_.isString(url)) {
+                links.push(url);
+              }
             });
             $('img').each((i, el) => {
-              links.push($(el).attr('src'));
+              const url = $(el).attr('src');
+              if(_.isString(url)) {
+                links.push(url);
+              }
             });
-            links = _.uniq(links.map((link) => url.resolve(task.url, link)));
+            console.log(links);
+            links = links.map((link) => {
+              try {
+                return url.resolve(task.url, link);
+              }
+              catch(e) {
+                return void 0;
+              }
+            });
+            links = _.filter(links, link=>link&&(isHttpUri(link)||isHttpsUri(link)));
+            links = _.uniq(links);
             this.updateStatus.images += links.length;
             imagesQueue.push(links.map((url) => ({
               url
@@ -175,29 +193,33 @@ export default {
         sort: '-createdAt'
       });
       this.updateStatus.places = places.length;
-      placesQueue.push(places.map((place) => ({
-        url: place.url
-      })));
-      await new Promise((resolve, reject) => {
-        placesQueue.drain = (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-          placesQueue.drain = void 0;
-        };
-      });
-      await new Promise((resolve, reject) => {
-        imagesQueue.drain = (err) => {
-          if (err) {
-            reject(err);
-          } else {
-            resolve();
-          }
-          imagesQueue.drain = void 0;
-        };
-      });
+      if(places.length>0) {
+        placesQueue.push(places.map((place) => ({
+          url: place.url
+        })));
+        await new Promise((resolve, reject) => {
+          placesQueue.drain = (err) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve();
+            }
+            placesQueue.drain = void 0;
+          };
+        });
+        if(imagesQueue.started && imagesQueue.running) {
+          await new Promise((resolve, reject) => {
+            imagesQueue.drain = (err) => {
+              if (err) {
+                reject(err);
+              } else {
+                resolve();
+              }
+              imagesQueue.drain = void 0;
+            };
+          });
+        }
+      }
       this.updating = false;
     },
     async clearMessages() {
