@@ -11,9 +11,9 @@ export default new Router({
       component: require('@/components/PlacesPage').default,
     },
     {
-      path: '/thread/:id',
-      name: 'thread',
-      component: require('@/components/ThreadPage').default
+      path: '/invites',
+      name: 'invites',
+      component: require('@/components/InvitesPage').default,
     },
     {
       path: '/container',
@@ -21,13 +21,28 @@ export default new Router({
       component: require('@/components/ContainerPage').default
     },
     {
-      path: '/',
-      name: 'threads',
-      component: require('@/components/ThreadsPage').default
+      path: '/forum/:forumId/thread/:threadId',
+      name: 'thread',
+      component: require('@/components/ThreadPage').default
     },
     {
+      path: '/forum/:forumId',
+      name: 'forum',
+      component: require('@/components/ForumPage').default,
+    },
+    {
+      path: '/',
+      name: 'forums',
+      redirect: '/places',
+    },
+    // {
+    //   path: '/',
+    //   name: 'forums',
+    //   component: require('@/components/ForumsPage').default
+    // },
+    {
       path: '*',
-      redirect: '/'
+      redirect: '/',
     }
   ]
 })

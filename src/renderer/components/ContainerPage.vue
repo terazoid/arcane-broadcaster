@@ -1,5 +1,5 @@
 <template>
-<b-container>
+<div>
   <b-card v-if="image" class="my-2" title="Generated container image">
     <div>
       <b-img fluid :src="image" class="my-1" />
@@ -29,7 +29,7 @@
       </b-card-group>
     </b-card>
   </template>
-</b-container>
+</div>
 </template>
 
 <script>

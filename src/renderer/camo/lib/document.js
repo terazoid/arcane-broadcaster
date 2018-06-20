@@ -214,12 +214,13 @@ export default class Document extends BaseDocument {
         }
 
         return DB().findOne(this.collectionName(), query)
-        .then(function(data) {
+        .then(async function(data) {
             if (!data) {
                 return null;
             }
 
             let doc = that._fromData(data);
+            await doc._getHookPromises('postFound');
             if (populate === true || (isArray(populate) && populate.length > 0)) {
                 return that.populate(doc, populate);
             }
@@ -266,12 +267,13 @@ export default class Document extends BaseDocument {
         }
 
         return DB().findOneAndUpdate(this.collectionName(), query, values, options)
-        .then(function(data) {
+        .then(async function(data) {
             if (!data) {
                 return null;
             }
 
             let doc = that._fromData(data);
+            await doc._getHookPromises('postFound');
             if (populate) {
                 return that.populate(doc);
             }
@@ -344,8 +346,11 @@ export default class Document extends BaseDocument {
         }
 
         return DB().find(this.collectionName(), query, options)
-        .then(function(datas) {
+        .then(async function(datas) {
             let docs = that._fromData(datas);
+            await Promise.all(_.concat([].concat(docs).map(
+              doc=>doc._getHookPromises('postFound')
+            )));
 
             if (options.populate === true ||
                 (isArray(options.populate) && options.populate.length > 0)) {

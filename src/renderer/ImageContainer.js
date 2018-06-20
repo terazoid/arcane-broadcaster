@@ -9,7 +9,6 @@ function getIndex(i) {
 
 export default class ImageContainer {
     static get BLOCK_TYPE_MESSAGE() {return 1;};
-    static get BLOCK_TYPE_PLACE() {return 2;};
 
     static get SEEK_SET() { return 0;}
     static get SEEK_CUR() { return 1;}
@@ -19,6 +18,7 @@ export default class ImageContainer {
         this.image = image;
         this.size = image.bitmap.width*image.bitmap.height*3;
         this.pointer = 0;
+        this.aesCipher = null;
     }
 
     static fromFile(url) {
@@ -111,21 +111,12 @@ export default class ImageContainer {
     writeBlock(block) {
         if(block instanceof Message) {
             const msg = Buffer.from(block.toString(), 'utf-8');
+            const bJsonEnc = Buffer.from(this.aesCipher.encrypt(bJson));
             this._confirmSpace(8*(1+4+4+msg.length));
             this.writeByte(ImageContainer.BLOCK_TYPE_MESSAGE);
-            this.writeInt(msg.length);
-            this.writeInt(CRC32.buf(msg));
-            for(const b of msg) {
-                this.writeByte(b);
-            }
-        }
-        else if(block instanceof Place) {
-            const msg = Buffer.from(block.url, 'utf-8');
-            this._confirmSpace(8*(1+4+4+msg.length));
-            this.writeByte(ImageContainer.BLOCK_TYPE_PLACE);
-            this.writeInt(msg.length);
-            this.writeInt(CRC32.buf(msg));
-            for(const b of msg) {
+            this.writeInt(bJsonEnc.length);
+            this.writeInt(CRC32.buf(bJsonEnc));
+            for(const b of bJsonEnc) {
                 this.writeByte(b);
             }
         }
@@ -134,7 +125,7 @@ export default class ImageContainer {
         }
     }
 
-    readBlock() {
+    async readBlock() {
         this._confirmSpace(8*(1+4+4));
         const type = this.readByte();
         const len = this.readInt();
@@ -142,28 +133,18 @@ export default class ImageContainer {
         this._confirmSpace(8*len);
         switch(type) {
             case ImageContainer.BLOCK_TYPE_MESSAGE: {
-                let msg = Buffer.alloc(len);
+                const bJsonEnc = Buffer.alloc(len);
                 for (let i = 0; i < len; i++) {
                     const b = this.readByte();
-                    msg.writeUInt8(b, i);
+                    bJsonEnc.writeUInt8(b, i);
                 }
+                const msg = Buffer.from(this.aesCipher.decrypt(bJsonEnc));
                 const realCrc32 = CRC32.buf(msg);
                 if (realCrc32 !== crc32) {
                     throw new Error('Invalid checksum');
                 }
-                return Message.fromString(msg.toString('utf-8'));
-            }
-            case ImageContainer.BLOCK_TYPE_PLACE: {
-                let url = Buffer.alloc(len);
-                for (let i = 0; i < len; i++) {
-                    const b = this.readByte();
-                    url.writeUInt8(b, i);
-                }
-                const realCrc32 = CRC32.buf(url);
-                if (realCrc32 !== crc32) {
-                    throw new Error('Invalid checksum');
-                }
-                return Place.create({url:url.toString('utf-8')});
+                const {id: uniqueId, userId, date, message, parent, sign} = JSON.parse(msg);
+                return await Message.process({uniqueId,forumId:forum._id, userId, date, message, parent, sign});
             }
             default:
                 throw new Error(`Unknown block type ${type}`);

@@ -1,18 +1,32 @@
-import Document from '../camo/lib/document';
-import sha1 from 'node-sha1';
-import dateFormat from 'dateformat';
-import Vue from 'vue';
+import Document from '../camo/lib/document'
+import sha1 from 'node-sha1'
+import dateFormat from 'dateformat'
+import Vue from 'vue'
+import Forum from '../models/Forum'
+import NodeRSA from 'node-rsa'
 
 export default class Message extends Document {
   static create(data) {
     const m = super.create(data);
-    m._id=sha1(m.getUniqueData());
+    m.uniqueId=sha1(m.getUniqueData());
     return m;
   }
   
   constructor() {
     super();
-
+    
+    this.uniqueId = {
+      type: String,
+      required: true,
+    };
+    this.forumId = {
+      type: String,
+      required: true,
+    };
+    this.userId = {
+      type: String,
+      required: true,
+    };
     this.date = {
       type: Number,
       default() {
@@ -38,6 +52,14 @@ export default class Message extends Document {
       type: Boolean,
       default: true,
     };
+    this.sign = {
+      type: String,
+      required: true,
+    };
+  }
+  
+  get forum() {
+    return Forum.findOne({_id: this.forumId});
   }
 
   toString() {
@@ -56,12 +78,11 @@ export default class Message extends Document {
   }
 
   getUniqueData() {
-    return `${this.message}:${this.date}:${this.parent}`;
+    return `${this.forumId}:${this.message}:${this.date}:${this.parent}`;
   }
 
   get id() {
-    return this._id;
-    //return sha1(this.getUniqueData());
+    return this.uniqueId;
   }
 
   get formattedDate() {
@@ -94,6 +115,48 @@ export default class Message extends Document {
 
   static collectionName() {
     return 'messages';
+  }
+  
+  validateSign() {
+    const key = new NodeRSA();
+    try{
+      key.importKey(Buffer.from(this.userId, 'base64'), 'pkcs1-public-der');
+      return key.verify(this.uniqueId, Buffer.from(this.sign, 'base64'));
+    }
+    catch(e) {
+      return false;
+    }
+    return false;
+  }
+  
+  static async process({uniqueId, forumId, userId, date, message, parent, sign}) {
+    let m = await Message.findOne({uniqueId});
+    if(m === null) {
+      const m = Message.create({forumId, userId, date, message, parent, sign, pending:false});
+      if(m.uniqueId !== uniqueId) {
+        console.log({message: 'Invalid uniqueId', m, uniqueId});
+        return null;
+      }
+      if(!m.validateSign()) {
+        console.log({message: 'Invalid signature', m});
+        return null;
+      }
+      return await m.save();
+    }
+    else if (m.pending) {
+      m.pending = false;
+      return await m.save();
+    }
+    return null;
+  }
+  
+  static async findPendingMessages(forumId) {
+    return Message.find({forumId, pending: true}, {sort:'date'});
+  }
+  
+  toString() {
+    const {uniqueId: id, forumId, userId, date, message, parent, sign} = this;
+    return JSON.stringify({id, forumId, userId, date, message, parent, sign});
   }
   
   postSave() {

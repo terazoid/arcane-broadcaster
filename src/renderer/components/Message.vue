@@ -3,8 +3,12 @@
   <div slot="header" class="mb-0">
     <div class="card-title">
       <div class="pull-left">
-        <span v-b-tooltip.hover title="ID">
-          {{message.id}}
+        <span v-b-tooltip.hover title="Message ID" class="message-id">
+          {{message.uniqueId}}
+        </span>
+        <span v-b-tooltip.hover title="User ID" class="user-id">
+          {{shortId}}
+          <span v-if="isYou" class="is-you">(You)</span>
         </span>
       </div>
     </div>
@@ -32,6 +36,11 @@
 </template>
 
 <script>
+import Identity from '../models/Identity'
+import sha1 from 'node-sha1'
+
+const yourId = Identity.instance().stringId;
+
 export default {
   name: 'message',
   props: {
@@ -51,12 +60,27 @@ export default {
     messageHtml() {
       return this._.escape(this.message.message).replace(/\n/g,'<br/>');
     },
-  }
+    isYou() {
+      return yourId === this.message.userId;
+    },
+    shortId() {
+      return sha1(Buffer.from(this.message.userId, 'base64'));
+    },
+  },
 }
 </script>
 
 <style>
 .pull-right {
   float: right;
+}
+.message-id {
+  color: #999;
+}
+.user-id {
+  color: #789922;
+}
+.is-you {
+  color: #505a7a;
 }
 </style>

@@ -107,6 +107,8 @@ export default class BaseDocument {
     preDelete() { }
 
     postDelete() { }
+    
+    postFound() {}
 
     /**
      * Generate this._schema from fields
@@ -288,6 +290,7 @@ export default class BaseDocument {
 
         let documents = [];
         let embeddedPromises = [];
+        let afterFoundPromises = [];
         datas.forEach(function(d) {
             let instance = that._instantiate();
             _.keys(d).forEach(function(key) {

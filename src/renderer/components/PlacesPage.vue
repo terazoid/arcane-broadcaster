@@ -1,5 +1,5 @@
 <template>
-<b-container>
+<div>
     <b-form @submit="create" @submit.prevent>
     <div class="row">
       <div class="col-md-10 col-sm-12">
@@ -31,7 +31,7 @@
       <b-pagination :total-rows="totalRows" :per-page="perPage" v-model="currentPage" class="my-0" />
     </b-col>
   </b-row>
-</b-container>
+</div>
 </template>
 
 <script>
