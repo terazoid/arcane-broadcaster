@@ -16,6 +16,7 @@
 <script>
 import Loader from './Loader'
 import ForumModel from '../models/Forum'
+import Message from '../models/Message'
 import Place from '../models/Place'
 import TextContainer from '../helpers/TextContainer'
 import queue from 'async/queue'
@@ -65,7 +66,7 @@ export default {
           if ([200,304].indexOf(response.status)!==-1 && this._.get(response.headers, 'content-type', 'image/png').toLowerCase() === 'image/png' ) {
             this.updateStatus.urls.push(task.url);
             const container = await ImageContainer.fromBuffer(Buffer.from(response.data));
-            container.aesCipher = task.forum.aesCipher;
+            container.forum = task.forum;
             for (let i = 0; i < 4096; i++) {
               let block;
               try {

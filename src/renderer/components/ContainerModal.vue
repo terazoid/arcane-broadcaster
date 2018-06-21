@@ -18,6 +18,7 @@
     {{excessBlocks}} messages did not fit
   </b-alert>
   <template v-if="type=='image' && image">
+    <b-alert show variant="warning" v-if="this.skipped>0">Not enough space. Skipped {{skipped}} message{{skipped>1?'s':''}}</b-alert>
     <b-card class="my-2" title="Generated container image">
       <div>
         <b-img fluid :src="image" class="my-1" />
@@ -73,6 +74,7 @@ export default {
       image: null,
       imageContainer: null,
       textContainer,
+      skipped: 0,
     };
   },
   computed: {
@@ -121,13 +123,17 @@ export default {
       if(!_.isArray(paths)) {
         return;
       }
+      this.skipped = 0;
       const image = await ImageContainer.fromFile(paths[0]);
+      image.forum = this.forum;
       for(let i=0; i<this.blocks.length; i++) {
         const message=this.blocks[i];
         try {
           image.writeBlock(message, this.forum);
         }
         catch(e) {
+          this.skipped++;
+          console.log(e);
           break;
         }
       }

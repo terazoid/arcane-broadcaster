@@ -19,6 +19,12 @@ export default class ImageContainer {
         this.size = image.bitmap.width*image.bitmap.height*3;
         this.pointer = 0;
         this.aesCipher = null;
+        this._forum = null;
+    }
+    
+    set forum(v) {
+      this._forum = v;
+      this.aesCipher = v.aesCipher;
     }
 
     static fromFile(url) {
@@ -111,11 +117,11 @@ export default class ImageContainer {
     writeBlock(block) {
         if(block instanceof Message) {
             const msg = Buffer.from(block.toString(), 'utf-8');
-            const bJsonEnc = Buffer.from(this.aesCipher.encrypt(bJson));
+            const bJsonEnc = Buffer.from(this.aesCipher.encrypt(msg));
             this._confirmSpace(8*(1+4+4+msg.length));
             this.writeByte(ImageContainer.BLOCK_TYPE_MESSAGE);
             this.writeInt(bJsonEnc.length);
-            this.writeInt(CRC32.buf(bJsonEnc));
+            this.writeInt(CRC32.buf(msg));
             for(const b of bJsonEnc) {
                 this.writeByte(b);
             }
@@ -144,7 +150,7 @@ export default class ImageContainer {
                     throw new Error('Invalid checksum');
                 }
                 const {id: uniqueId, userId, date, message, parent, sign} = JSON.parse(msg);
-                return await Message.process({uniqueId,forumId:forum._id, userId, date, message, parent, sign});
+                return await Message.process({uniqueId,forumId:this._forum._id, userId, date, message, parent, sign});
             }
             default:
                 throw new Error(`Unknown block type ${type}`);
