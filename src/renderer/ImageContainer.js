@@ -130,10 +130,17 @@ export default class ImageContainer {
             throw new Error('Unknown block type');
         }
     }
+    
+    writeEom() {
+        this.writeByte(0);
+    }
 
     async readBlock() {
         this._confirmSpace(8*(1+4+4));
         const type = this.readByte();
+        if(type === 0) {
+          return null;
+        }
         const len = this.readInt();
         const crc32 = this.readInt();
         this._confirmSpace(8*len);

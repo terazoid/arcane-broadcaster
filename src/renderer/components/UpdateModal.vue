@@ -71,6 +71,9 @@ export default {
               let block;
               try {
                 block = await container.readBlock();
+                if(block === null) {
+                  break;
+                }
               } catch (e) {
                 console.log(e);
                 break;
@@ -114,6 +117,21 @@ export default {
               if(forum) {
                 for(const elImg of $('img[src]', el).get()) {
                   let link = this._.get(elImg, 'attribs.src', null);
+                  if(this._.isString(link)) {
+                    try {
+                      link = url.resolve(place.url, link);
+                      console.log(link);
+                      if(isHttpUri(link)||isHttpsUri(link)) {
+                        links.push({url: link, forum});
+                      }
+                    }
+                    catch(e) {
+                      console.log(e);
+                    }
+                  }
+                };
+                for(const elLink of $('a[href]', el).get()) {
+                  let link = this._.get(elImg, 'attribs.href', null);
                   if(this._.isString(link)) {
                     try {
                       link = url.resolve(place.url, link);

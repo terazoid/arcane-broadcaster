@@ -27,6 +27,8 @@ function createWindow () {
       "webSecurity": false
     }
   })
+  
+  mainWindow.setMenu(null);
 
   mainWindow.loadURL(winURL)
 

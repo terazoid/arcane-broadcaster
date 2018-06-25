@@ -129,13 +129,19 @@ export default {
       for(let i=0; i<this.blocks.length; i++) {
         const message=this.blocks[i];
         try {
-          image.writeBlock(message, this.forum);
+          image.writeBlock(message);
         }
         catch(e) {
           this.skipped++;
           console.log(e);
           break;
         }
+      }
+      try{
+        image.writeEom();
+      }
+      catch(e) {
+        
       }
       this.image = await image.getBase64('image/png');
       this.imageContainer = image;

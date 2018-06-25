@@ -77,6 +77,6 @@
     color: #fff;
   }
   .myId {
-    font-size: 0.6rem;
+    font-size: 0.55rem;
   }
 </style>

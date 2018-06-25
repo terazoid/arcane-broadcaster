@@ -38,8 +38,20 @@
 <script>
 import Identity from '../models/Identity'
 import sha1 from 'node-sha1'
+import BBCodeParser from 'bbcode-parser'
+import BBTag from 'bbcode-parser/bbTag'
 
 const yourId = Identity.instance().stringId;
+const bbCodeTags = {
+  'b': new BBTag("b", true, false, false),
+  'i': new BBTag("i", true, false, false),
+  'u': new BBTag("u", true, false, false),
+  's': new BBTag("s", true, false, false),
+  'img': new BBTag("img", true, false, false, (tag, content, attr) => {
+    return "<img src=\"" + content + "\" />";
+  }),
+};
+const parser = new BBCodeParser(bbCodeTags, {escapeHTML:true});
 
 export default {
   name: 'message',
@@ -58,7 +70,10 @@ export default {
   },
   computed: {
     messageHtml() {
-      return this._.escape(this.message.message).replace(/\n/g,'<br/>');
+      let html = parser.parseString(this.message.message);
+      html = html.replace(/^>.+$/gm, '<span class="quote">$0</span>');
+      return html;
+      //return this._.escape(this.message.message).replace(/\n/g,'<br/>');
     },
     isYou() {
       return yourId === this.message.userId;
@@ -82,5 +97,8 @@ export default {
 }
 .is-you {
   color: #505a7a;
+}
+.quote {
+  color: #b5bd68;
 }
 </style>
